@@ -4,6 +4,7 @@ const { Schema } = mongoose
 
 const audioSchema  = new Schema({
   name: String,
+  url: String,
   data: Buffer,
 }, {timestamps: true})
 

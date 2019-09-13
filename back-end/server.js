@@ -7,12 +7,15 @@ const audioRecordsRouter = require('./controllers/audioRecords')
 
 require('dotenv').config()
 
+// init express app
 const app = express()
 const port = process.env.PORT || 8000
 
 // Server middleware
 app.use(cors())
 app.use(express.json())
+app.use(express.static(`${__dirname}/media`));
+
 
 // MongoDB conecction config
 const uri = process.env.ATLAS_URI

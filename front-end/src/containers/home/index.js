@@ -88,20 +88,24 @@ class Home extends Component {
       this.mediaRecorder.addEventListener("stop", () => {
         const audioBlob = new Blob(audioChunks, { 'type' : 'audio/ogg; codecs=opus' })
         const audioUrl = URL.createObjectURL(audioBlob);
+        const reader = new FileReader()
+        reader.onload = (event) => {
+          MySwal.fire({
+            title: '¿Quiere guardar la grabación?',
+            html: `<audio src="${audioUrl}" controls></audio>`,
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Guardar',
+            cancelButtonText: 'Cancelar'
+          }).then((result) => {
+            if (result.value) {
+              this.saveRecord(event.target.result)
+            }
+          })
+        }
+        reader.readAsDataURL(audioBlob)
         this.setState({audioUrl: audioUrl})
-        MySwal.fire({
-          title: '¿Quiere guardar la grabación?',
-          html: `<audio src="${audioUrl}" controls></audio>`,
-          showCancelButton: true,
-          confirmButtonColor: '#3085d6',
-          cancelButtonColor: '#d33',
-          confirmButtonText: 'Guardar',
-          cancelButtonText: 'Cancelar'
-        }).then((result) => {
-          if (result.value) {
-            this.saveRecord(audioBlob)
-          }
-        })
       })
     })
     .catch(err => window.alert(err))
@@ -110,10 +114,10 @@ class Home extends Component {
     this.setState({isRecording: false})
     this.mediaRecorder.stop()
   }
-  saveRecord (audioBlob) {
+  saveRecord (file) {
     const body = {
       name: `audio-${Date.now()}`,
-      data: btoa(audioBlob)
+      data: file
     }
     fetch('http://localhost:8000/audio/add', {
       method: 'POST',
@@ -142,10 +146,12 @@ class Home extends Component {
         this.setState({data: json})
       })
   }
-  onDelete (id) {
+  onDelete (id, name) {
     const body = {
-      id: id
+      id,
+      name
     }
+    console.log(body)
     MySwal.fire({
       title: '¿Quiere borrar la grabación?',
       showCancelButton: true,
@@ -163,23 +169,27 @@ class Home extends Component {
             'Access-Control-Allow-Origin': '*'
           }
         })
-        .then(res => {
-          console.log(res)
-          MySwal.fire(
-            'Deleted!',
-            'Your file has been deleted.',
-            'success'
-          )
-          this.getAudioRecords()
+        .then(res => res.json())
+        .then(response => {
+          console.log(response)
+          if (!response.error) {
+            MySwal.fire(
+              'Deleted!',
+              'Your file has been deleted.',
+              'success'
+            )
+            this.getAudioRecords()
+          }
         })
         .catch(err => console.log(err))
       }
     })
 
   }
-  onEdit (id) {
+  onEdit (id, name) {
     const body = {
-      id: id
+      id,
+      oldName: name
     }
     MySwal.fire({
       title: 'New Name',
@@ -192,7 +202,7 @@ class Home extends Component {
       }
     }).then(({value}) => {
       if (value) {
-        body['name'] = value
+        body['newName'] = value
         fetch('http://localhost:8000/audio/edit', {
           method: 'POST',
           body: JSON.stringify(body),
@@ -201,8 +211,9 @@ class Home extends Component {
             'Access-Control-Allow-Origin': '*'
           }
         })
-        .then(res => {
-          console.log(res)
+        .then(res => res.json())
+        .then(response => {
+          console.log(response)
           MySwal.fire(
             'Updated!',
             'Your file has been Updated.',

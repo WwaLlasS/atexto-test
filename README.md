@@ -13,3 +13,5 @@ For run the project follow the instructions:
 
 1. `$ npm install`
 2. `$ npm start`
+
+> Note: create `/back-end/media/audio/` folder for static files 

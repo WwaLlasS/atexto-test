@@ -7,18 +7,15 @@ import { faTimes, faEdit } from '@fortawesome/free-solid-svg-icons'
 
 
 const createTableRows = (data, onDelete, onEdit) => {
-  return data.map(({data, name, _id}, i) => {
-    var audioBlob = new Blob(data.data, { 'type' : 'audio/ogg; codecs=opus' })
-    const audioUrl = URL.createObjectURL(audioBlob);
-    console.log(audioUrl)
+  return data.map(({url, name, _id}, i) => {
     return (
       <tr key={i}>
         <td>{name}</td>
-        <td><audio src={audioUrl} controls></audio></td>
+        <td><audio src={`http://127.0.0.1:8000${url}`} controls></audio></td>
         <td>
-          <FontAwesomeIcon icon={faEdit} onClick={() => onEdit(_id)} title='Edit' />
+          <FontAwesomeIcon icon={faEdit} onClick={() => onEdit(_id, name)} title='Edit' />
           &nbsp;&nbsp;
-          <FontAwesomeIcon icon={faTimes} onClick={() => onDelete(_id)} title='Delete' />
+          <FontAwesomeIcon icon={faTimes} onClick={() => onDelete(_id, name)} title='Delete' />
         </td>
       </tr>
     )
